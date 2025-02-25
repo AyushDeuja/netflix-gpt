@@ -1,65 +1,89 @@
 import { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
-  const toggleSignInForm = () => {
-    setIsSignInForm(!isSignInForm);
-  };
+  const [loading, setLoading] = useState(false);
 
+  const dispatch = useDispatch();
   const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
+  const navigate = useNavigate();
 
-  const handleButtonClick = () => {
-    //Validate the form data
-    const errmessage = checkValidData(
-      email.current.value,
-      password.current.value
-    );
-    setErrorMessage(errmessage);
-    if (errmessage) return;
-    //SignIn/SignUp logic here
-    if (!isSignInForm) {
-      //signUp logic here
-      createUserWithEmailAndPassword(
-        auth,
-        email.current.value,
-        password.current.value
-      )
-        .then((userCredential) => {
-          // Signed up
-          const user = userCredential.user;
-          console.log(user);
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setErrorMessage(errorCode + "-" + errorMessage);
+  const toggleSignInForm = () => {
+    setIsSignInForm(!isSignInForm);
+    setErrorMessage(null);
+  };
+
+  const handleButtonClick = async () => {
+    if (!email.current.value || !password.current.value) {
+      setErrorMessage("Please fill in all fields.");
+      return;
+    }
+
+    // Validate form data
+    const errMessage = checkValidData(email.current.value, password.current.value);
+    if (errMessage) {
+      setErrorMessage(errMessage);
+      return;
+    }
+
+    setErrorMessage(null);
+    setLoading(true);
+
+    try {
+      if (!isSignInForm) {
+        // Sign Up logic
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        );
+        const user = userCredential.user;
+
+        await updateProfile(user, {
+          displayName: name.current.value,
+          photoURL: "https://avatars.githubusercontent.com/u/155053271?v=4",
         });
-    } else {
-      //signIn logic here
-      signInWithEmailAndPassword(
-        auth,
-        email.current.value,
-        password.current.value
-      )
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-          console.log(user);
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setErrorMessage(errorCode + "-" + errorMessage)
-        });
+
+        dispatch(
+          addUser({
+            uid: user.uid,
+            email: user.email,
+            displayName: name.current.value,
+            photoURL: user.photoURL,
+          })
+        );
+
+        navigate("/browse");
+      } else {
+        // Sign In logic
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        );
+        navigate("/browse");
+      }
+    } catch (error) {
+      setErrorMessage(error.code + " - " + error.message);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div>
       <Header />
@@ -70,10 +94,8 @@ const Login = () => {
         />
       </div>
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
-        className="w-3/12 absolute  bg-black p-12 my-36 mx-auto right-0 left-0 text-white rounded-lg bg-opacity-80"
+        onSubmit={(e) => e.preventDefault()}
+        className="w-3/12 absolute bg-black p-12 my-36 mx-auto right-0 left-0 text-white rounded-lg bg-opacity-80"
       >
         <h1 className="font-bold text-3xl py-4">
           {isSignInForm ? "Sign In" : "Sign Up"}
@@ -83,27 +105,30 @@ const Login = () => {
             ref={name}
             type="text"
             placeholder="Full Name"
-            className="p-4 my-4 w-full bg-gray-700"
+            className="p-4 my-4 w-full bg-gray-700 rounded"
           />
         )}
         <input
           ref={email}
-          type="text"
+          type="email"
           placeholder="Email Address"
-          className="p-4 my-4 w-full bg-gray-700"
+          className="p-4 my-4 w-full bg-gray-700 rounded"
         />
         <input
           ref={password}
           type="password"
           placeholder="Password"
-          className="p-4 my-4 w-full bg-gray-700"
+          className="p-4 my-4 w-full bg-gray-700 rounded"
         />
-        <p className="text-red-500 font-bold text-lg py-2">{errorMessage}</p>
+        {errorMessage && (
+          <p className="text-red-500 font-bold text-lg py-2">{errorMessage}</p>
+        )}
         <button
-          className="p-4 my-6 bg-red-700 w-full rounded-lg"
+          className="p-4 my-6 bg-red-700 w-full rounded-lg disabled:opacity-50"
           onClick={handleButtonClick}
+          disabled={loading}
         >
-          {isSignInForm ? "Sign In" : "Sign Up"}
+          {loading ? "Processing..." : isSignInForm ? "Sign In" : "Sign Up"}
         </button>
         <p className="py-4 cursor-pointer" onClick={toggleSignInForm}>
           {isSignInForm ? (
@@ -112,7 +137,7 @@ const Login = () => {
             </>
           ) : (
             <>
-              Already registered? <u> Sign in now.</u>
+              Already registered? <u>Sign in now.</u>
             </>
           )}
         </p>
