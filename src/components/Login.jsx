@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null);
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
   };
@@ -15,9 +17,48 @@ const Login = () => {
 
   const handleButtonClick = () => {
     //Validate the form data
-    const message = checkValidData(email.current.value, password.current.value);
-    setErrorMessage(message)
-    //signIn / SignUp
+    const errmessage = checkValidData(
+      email.current.value,
+      password.current.value
+    );
+    setErrorMessage(errmessage);
+    if (errmessage) return;
+    //SignIn/SignUp logic here
+    if (!isSignInForm) {
+      //signUp logic here
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage);
+        });
+    } else {
+      //signIn logic here
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage)
+        });
+    }
   };
   return (
     <div>
@@ -39,7 +80,7 @@ const Login = () => {
         </h1>
         {!isSignInForm && (
           <input
-          ref={name}
+            ref={name}
             type="text"
             placeholder="Full Name"
             className="p-4 my-4 w-full bg-gray-700"
