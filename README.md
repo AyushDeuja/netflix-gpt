@@ -28,6 +28,10 @@
 - Fetch data for trailer video
 - Update store with Trailer video Data
 - Embedd the youtube video & made it autoplay and mute   
+- Build secondary components
+- Build movie list
+- Buils movie card
+- TMDB image cdn url
 
 # Features
 - Login/Sign Up
