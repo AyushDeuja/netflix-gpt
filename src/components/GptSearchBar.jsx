@@ -1,7 +1,9 @@
+import { useSelector } from "react-redux";
 import { BODY_IMG } from "../utils/constants";
 import lang from "../utils/languageConstants";
 
 const GptSearchBar = () => {
+  const langKey = useSelector((store) => store.config.lang);
   return (
     <div>
       <div className="absolute -z-10">
@@ -12,10 +14,10 @@ const GptSearchBar = () => {
           <input
             type="text"
             className="p-4 m-4 col-span-9"
-            placeholder={lang.nep.gptSearchPlaceholder}
+            placeholder={lang[langKey].gptSearchPlaceholder}
           />
           <button className="py-2 m-4 px-4 bg-red-700 text-white rounded-lg col-span-3">
-            {lang.nep.search}
+            {lang[langKey].search}
           </button>
         </form>
       </div>

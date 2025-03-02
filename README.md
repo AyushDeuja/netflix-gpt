@@ -32,7 +32,9 @@
 - Build movie list
 - Buils movie card
 - TMDB image cdn url
-- GPT search feature
+- GPT search Page
+- GPT search Bar
+- Multi-Language feature in our app
 
 # Features
 - Login/Sign Up
