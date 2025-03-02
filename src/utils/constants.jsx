@@ -8,11 +8,19 @@ export const BODY_IMG =
   "https://assets.nflxext.com/ffe/siteui/vlv3/0cf2c109-3af1-4a9d-87d7-aecfac5fe881/web/NP-en-20250217-TRIFECTA-perspective_76dcb6f9-24a4-4224-8132-cb79a5094f75_large.jpg";
 
 export const API_OPTIONS = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1OTA0MDMxYTdmZjU3NWIzYjQzNDg1MGZhZTk4YmFlNCIsIm5iZiI6MTc0MDc0NDExMS4yNzQsInN1YiI6IjY3YzFhNWFmYTFkZGY1M2Y0ZGM4ZDY2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.RjiqFoAOafEROReYmMVqM_JAOHX-VCnKv1exCy_p0H8'
-    }
-  };
-  
-  export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500/"
+  method: "GET",
+  headers: {
+    accept: "application/json",
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1OTA0MDMxYTdmZjU3NWIzYjQzNDg1MGZhZTk4YmFlNCIsIm5iZiI6MTc0MDc0NDExMS4yNzQsInN1YiI6IjY3YzFhNWFmYTFkZGY1M2Y0ZGM4ZDY2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.RjiqFoAOafEROReYmMVqM_JAOHX-VCnKv1exCy_p0H8",
+  },
+};
+
+export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500/";
+
+export const SUPPORTED_LANGUAGES = [
+  { identifier: "en", name: "English" },
+  { identifier: "nep", name: "Nepali" },
+  { identifier: "hindi", name: "Hindi" },
+  { identifier: "spanish", name: "Spanish" },
+];

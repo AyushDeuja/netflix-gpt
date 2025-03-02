@@ -32,6 +32,7 @@
 - Build movie list
 - Buils movie card
 - TMDB image cdn url
+- GPT search feature
 
 # Features
 - Login/Sign Up
