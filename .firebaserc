@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "netflixgpt-fd9d1"
-  }
+    "default": "netflixgpt-fd9d1",
+    "build": "netflixgpt-58c20",
+    "staging": "netflixgpt-fd9d1"
+  },
+  "targets": {},
+  "etags": {}
 }
