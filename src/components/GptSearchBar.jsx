@@ -11,31 +11,34 @@ const GptSearchBar = () => {
 
   const [query, setQuery] = useState("");
 
-  //search movie in TMDB
+  // Search movie in TMDB
   const searchMovieTMDB = async (movie) => {
-    const data = await fetch(
-      "https://api.themoviedb.org/3/search/movie?query=" +
-        movie +
-        "&include_adult=false&language=en-US&page=1",
-      API_OPTIONS
-    );
-    const json = await data.json();
-    return json.results;
+    try {
+      const data = await fetch(
+        `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
+        API_OPTIONS
+      );
+      const json = await data.json();
+
+      if (json && json.results) {
+        // Make sure to return results if available, otherwise return an empty array
+        return json.results;
+      } else {
+        console.error("No results found in TMDB response.");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching TMDB data:", error);
+      return [];
+    }
   };
 
   useEffect(() => {
-    const scriptId = "puter-script"; // Unique identifier for the script
-  
-    // Check if the script is already added
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId; // Assign unique ID to the script
-      script.src = "https://js.puter.com/v2/";
-      script.async = true;
-      document.body.appendChild(script);
-    }
+    const script = document.createElement("script");
+    script.src = "https://js.puter.com/v2/";
+    script.async = true;
+    document.body.appendChild(script);
   }, []);
-  
 
   const handleGptSearchClick = async () => {
     console.log("Searching for:", query);
@@ -63,9 +66,7 @@ const GptSearchBar = () => {
       const tmdbResults = await Promise.all(promiseArray);
 
       console.log("TMDB Results:", tmdbResults); // 🔍 Debugging API results
-      dispatch(
-        addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults })
-      );
+      dispatch(addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults }));
       console.log("Redux Dispatch Called!");
     } catch (error) {
       console.error("Error fetching movie names:", error);
@@ -74,6 +75,9 @@ const GptSearchBar = () => {
 
   return (
     <div>
+      <div className="absolute -z-10">
+        <img alt="Body-Image" src={BODY_IMG} />
+      </div>
       <div className="pt-[10%] flex justify-center">
         <form
           className="w-1/2 bg-black grid grid-cols-12"
