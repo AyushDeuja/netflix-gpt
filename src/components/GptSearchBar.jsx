@@ -11,11 +11,20 @@ const GptSearchBar = () => {
 
   const [query, setQuery] = useState("");
 
+  // Search movie in TMDB
+  const searchMovieTMDB = async (movie) => {
+    const data = await fetch(
+      `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
+      API_OPTIONS
+    );
+    const json = await data.json();
+    return json.results;
+  };
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://js.puter.com/v2/";
     script.async = true;
-    script.onload = () => console.log("Puter AI SDK Loaded");
     document.body.appendChild(script);
   }, []);
   
@@ -40,9 +49,6 @@ const GptSearchBar = () => {
 
   return (
     <div>
-      <div className="absolute -z-10">
-        <img alt="Body-Image" src={BODY_IMG} />
-      </div>
       <div className="pt-[10%] flex justify-center">
         <form
           className="w-1/2 bg-black grid grid-cols-12"
