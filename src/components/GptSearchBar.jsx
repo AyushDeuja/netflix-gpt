@@ -14,60 +14,62 @@ const GptSearchBar = () => {
   // Search movie in TMDB
   const searchMovieTMDB = async (movie) => {
     try {
-      const data = await fetch(
+      const response = await fetch(
         `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
         API_OPTIONS
       );
-      const json = await data.json();
-
-      if (json && json.results) {
-        // Make sure to return results if available, otherwise return an empty array
-        return json.results;
-      } else {
-        console.error("No results found in TMDB response.");
-        return [];
-      }
+      if (!response.ok) throw new Error("Failed to fetch movie data");
+      const json = await response.json();
+      return json.results;
     } catch (error) {
-      console.error("Error fetching TMDB data:", error);
+      console.error("TMDB API Error:", error);
       return [];
     }
   };
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://js.puter.com/v2/";
-    script.async = true;
-    document.body.appendChild(script);
+    const scriptId = "puter-script";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://js.puter.com/v2/";
+      script.async = true;
+      script.onload = () => console.log("Puter script loaded");
+      document.body.appendChild(script);
+    }
   }, []);
 
   const handleGptSearchClick = async () => {
-    console.log("Searching for:", query);
-
     if (!window.puter) {
       console.error("Error: Puter AI SDK not loaded.");
       return;
     }
 
-    const formattedQuery = `categories: Act as a movie recommendation system and suggest some movies for the query ${query}. Only give names of 5 movies, comma separated like the example result given ahead.Example Result: Gadar,iron man,iron man 2, golmaal, 3 idiots`;
+    console.log("Searching for:", query);
+    const formattedQuery = `categories: Act as a movie recommendation system and suggest some movies for the query ${query}. Only give names of 5 movies, comma separated like the example result given ahead. Example Result: Gadar,Iron Man,Iron Man 2,Golmaal,3 Idiots`;
 
     try {
       const gptResults = await window.puter.ai.chat(formattedQuery);
       console.log("GPT Results:", gptResults);
 
-      const gptMovies = gptResults?.message?.content.split(",");
-      console.log("GPT Movies to Dispatch:", gptMovies); // Debugging line
+      if (!gptResults?.message?.content) {
+        console.error("No response from GPT API.");
+        return;
+      }
+      
+      const gptMovies = gptResults.message.content.split(",").map(movie => movie.trim());
+      console.log("GPT Movies to Fetch:", gptMovies);
 
-      if (!gptMovies || gptMovies.length === 0) {
-        console.error("No movie names returned from GPT.");
+      if (gptMovies.length === 0) {
+        console.error("No valid movies returned from GPT.");
         return;
       }
 
-      const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
-      const tmdbResults = await Promise.all(promiseArray);
+      const tmdbResults = await Promise.all(gptMovies.map(searchMovieTMDB));
+      console.log("TMDB Results:", tmdbResults);
 
-      console.log("TMDB Results:", tmdbResults); // 🔍 Debugging API results
       dispatch(addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults }));
-      console.log("Redux Dispatch Called!");
+      console.log("Redux Dispatch Completed!");
     } catch (error) {
       console.error("Error fetching movie names:", error);
     }
