@@ -7,7 +7,7 @@ const GptMovieSuggestions = () => {
 
   return (
     <div className="p-4 m-4 bg-black text-white">
-      {movieNames}
+      {movieNames} 
     </div>
   );
 };
