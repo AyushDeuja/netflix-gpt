@@ -13,12 +13,24 @@ const GptSearchBar = () => {
 
   // Search movie in TMDB
   const searchMovieTMDB = async (movie) => {
-    const data = await fetch(
-      `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
-      API_OPTIONS
-    );
-    const json = await data.json();
-    return json.results;
+    try {
+      const data = await fetch(
+        `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
+        API_OPTIONS
+      );
+      const json = await data.json();
+
+      if (json && json.results) {
+        // Make sure to return results if available, otherwise return an empty array
+        return json.results;
+      } else {
+        console.error("No results found in TMDB response.");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching TMDB data:", error);
+      return [];
+    }
   };
 
   useEffect(() => {
@@ -27,7 +39,6 @@ const GptSearchBar = () => {
     script.async = true;
     document.body.appendChild(script);
   }, []);
-  
 
   const handleGptSearchClick = async () => {
     console.log("Searching for:", query);
@@ -40,8 +51,23 @@ const GptSearchBar = () => {
     const formattedQuery = `categories: Act as a movie recommendation system and suggest some movies for the query ${query}. Only give names of 5 movies, comma separated like the example result given ahead.Example Result: Gadar,iron man,iron man 2, golmaal, 3 idiots`;
 
     try {
-      const response = await window.puter.ai.chat(formattedQuery);
-      console.log("Response:", response);
+      const gptResults = await window.puter.ai.chat(formattedQuery);
+      console.log("GPT Results:", gptResults);
+
+      const gptMovies = gptResults?.message?.content.split(",");
+      console.log("GPT Movies to Dispatch:", gptMovies); // Debugging line
+
+      if (!gptMovies || gptMovies.length === 0) {
+        console.error("No movie names returned from GPT.");
+        return;
+      }
+
+      const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
+      const tmdbResults = await Promise.all(promiseArray);
+
+      console.log("TMDB Results:", tmdbResults); // 🔍 Debugging API results
+      dispatch(addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults }));
+      console.log("Redux Dispatch Called!");
     } catch (error) {
       console.error("Error fetching movie names:", error);
     }
@@ -49,6 +75,9 @@ const GptSearchBar = () => {
 
   return (
     <div>
+      <div className="absolute -z-10">
+        <img alt="Body-Image" src={BODY_IMG} />
+      </div>
       <div className="pt-[10%] flex justify-center">
         <form
           className="w-1/2 bg-black grid grid-cols-12"
