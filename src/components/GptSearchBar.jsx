@@ -34,11 +34,18 @@ const GptSearchBar = () => {
   };
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://js.puter.com/v2/";
-    script.async = true;
-    document.body.appendChild(script);
+    const scriptId = "puter-script"; // Unique identifier for the script
+  
+    // Check if the script is already added
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId; // Assign unique ID to the script
+      script.src = "https://js.puter.com/v2/";
+      script.async = true;
+      document.body.appendChild(script);
+    }
   }, []);
+  
 
   const handleGptSearchClick = async () => {
     console.log("Searching for:", query);
