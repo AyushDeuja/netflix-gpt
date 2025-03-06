@@ -1,25 +1,35 @@
-import { useSelector } from "react-redux";
-import { BODY_IMG } from "../utils/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { API_OPTIONS, BODY_IMG } from "../utils/constants";
 import lang from "../utils/languageConstants";
 import { useEffect, useRef, useState } from "react";
+import { addGptMovieResult } from "../utils/gptSlice";
 
 const GptSearchBar = () => {
   const langKey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
+  const dispatch = useDispatch();
 
   const [query, setQuery] = useState("");
+
+  // Search movie in TMDB
+  const searchMovieTMDB = async (movie) => {
+    const data = await fetch(
+      `https://api.themoviedb.org/3/search/movie?query=${movie}&include_adult=false&language=en-US&page=1`,
+      API_OPTIONS
+    );
+    const json = await data.json();
+    return json.results;
+  };
 
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://js.puter.com/v2/";
     script.async = true;
-    script.onload = () => console.log("Puter AI SDK Loaded");
     document.body.appendChild(script);
   }, []);
 
   const handleGptSearchClick = async () => {
-    console.log(searchText.current.value);
-    //Make an API call to GPT API and get the results
+    console.log("Searching for:", query);
 
     if (!window.puter) {
       console.error("Error: Puter AI SDK not loaded.");
@@ -29,10 +39,27 @@ const GptSearchBar = () => {
     const formattedQuery = `categories: Act as a movie recommendation system and suggest some movies for the query ${query}. Only give names of 5 movies, comma separated like the example result given ahead.Example Result: Gadar,iron man,iron man 2, golmaal, 3 idiots`;
 
     try {
-      const response = await window.puter.ai.chat(formattedQuery);
-      console.log("Response:", response);
+      const gptResults = await window.puter.ai.chat(formattedQuery);
+      console.log("GPT Results:", gptResults);
+
+      const gptMovies = gptResults?.message?.content.split(",");
+      console.log("GPT Movies to Dispatch:", gptMovies); // Debugging line
+
+      if (!gptMovies || gptMovies.length === 0) {
+        console.error("No movie names returned from GPT.");
+        return;
+      }
+
+      const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
+      const tmdbResults = await Promise.all(promiseArray);
+
+      console.log("TMDB Results:", tmdbResults); // 🔍 Debugging API results
+      dispatch(
+        addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults })
+      );
+      console.log("Redux Dispatch Called!");
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching movie names:", error);
     }
   };
 
