@@ -5,13 +5,15 @@ import { BODY_IMG } from "../utils/constants";
 
 const GptSearchPage = () => {
   return (
-    <div>
-        <div className="fixed -z-10">
-          <img alt="Body-Image" src={BODY_IMG} />
-        </div>
-      <GptSearchBar />
-      <GptMovieSuggestions />
-    </div>
+    <>
+      <div className="fixed -z-10">
+        <img className="h-screen object-cover" alt="Body-Image" src={BODY_IMG} />
+      </div>
+      <div>
+        <GptSearchBar />
+        <GptMovieSuggestions />
+      </div>
+    </>
   );
 };
 
