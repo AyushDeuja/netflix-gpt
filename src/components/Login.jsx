@@ -10,10 +10,13 @@ import { auth } from "../utils/firebase";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { BODY_IMG, USER_AVATAR } from "../utils/constants";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
 
   const email = useRef(null);
@@ -43,7 +46,6 @@ const Login = () => {
         password.current.value
       )
         .then((userCredential) => {
-
           updateProfile(userCredential.user, {
             displayName: name.current.value,
             photoURL: USER_AVATAR,
@@ -58,7 +60,6 @@ const Login = () => {
                   photoURL: photoURL,
                 })
               );
-
             })
             .catch((error) => {
               setErrorMessage(error.message);
@@ -88,9 +89,9 @@ const Login = () => {
   return (
     <div>
       <Header />
-      <div className="absolute " >
-        <img 
-        className="h-screen w-screen object-cover"
+      <div className="absolute ">
+        <img
+          className="h-screen w-screen object-cover"
           src={BODY_IMG}
           alt="Body-Image"
         />
@@ -119,12 +120,24 @@ const Login = () => {
           className="p-4 my-4 w-full bg-gray-800 rounded-md"
         />
 
-        <input
-          ref={password}
-          type="password"
-          placeholder="Password"
-          className="p-4 my-4 w-full bg-gray-800 rounded-md"
-        />
+        <div className="flex w-full">
+          <input
+            ref={password}
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="p-4 my-4 w-full bg-gray-800 rounded-md"
+          />
+          <button
+            className="absolute right-16 pt-8"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <FontAwesomeIcon icon={faEye} />
+            ) : (
+              <FontAwesomeIcon icon={faEyeSlash} />
+            )}
+          </button>
+        </div>
 
         <button
           className="p-4 my-4 bg-red-800 w-full rounded-md"
