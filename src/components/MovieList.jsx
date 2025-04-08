@@ -9,8 +9,6 @@ const MovieList = ({ title, movies }) => {
     return <p>No movies available</p>;
   }
 
-
-
   return (
     <div className="px-6">
       <h1 className="py-4 text-lg md:text-3xl text-white">{title}</h1>
